@@ -4,11 +4,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from api.database import init_db
+from app.database import init_db
 from app.middleware.tenant import TenantMiddleware
 
-
 # Import routers
+from app.api.auth import router as auth_router
+from app.api.organizations import router as org_router
+from app.api.research import router as research_router
+from app.api.watchlist import router as watchlist_routers
 
 
 
@@ -50,12 +53,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins= settings.CORS_ORIGINS,
-    aloow_credentials= True,
+    allow_credentials= True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-add.add_middleware(TenantMiddleware)
+app.add_middleware(TenantMiddleware)
 
 #------------------------------
 # ROUTES

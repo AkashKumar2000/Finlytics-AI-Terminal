@@ -1,0 +1,36 @@
+{
+    "files": [
+        {
+            "filename": "Airtel Concall -May 2026.pdf",
+            "company": "Bharti Airtel",
+            "symbol": "BHARTIARTL.NS",
+            "doc_type": "Earnings Concall",
+            "filing_date": "2026-05-01",
+            "exchange": "NSE"
+        },
+        {
+            "filename": "Infosys Concall  April-2026.pdf",
+            "company": "Infosys",
+            "symbol": "INFY.NS",
+            "doc_type": "Earnings Concall",
+            "filing_date": "2026-04-01",
+            "exchange": "NSE"
+        },
+        {
+            "filename": "Reliance Concalls Apirl-2026.pdf",
+            "company": "Reliance Industries",
+            "symbol": "RELIANCE.NS",
+            "doc_type": "Earnings Concall",
+            "filing_date": "2026-04-01",
+            "exchange": "NSE"
+        },
+        {
+            "filename": "TCS Concalls April-2026.pdf",
+            "company": "Tata Consultancy Services",
+            "symbol": "TCS.NS",
+            "doc_type": "Earnings Concall",
+            "filing_date": "2026-04-01",
+            "exchange": "NSE"
+        }
+    ]
+}

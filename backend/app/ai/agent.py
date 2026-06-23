@@ -21,9 +21,9 @@ The agent is AGENTIC - it decides which tool to call based on the query
 
 import json 
 import logging
-from langchain_anthropic import ChatAnthropic
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import craete_tool_calling_agent , AgentExecutor
+from langchain.agents import create_tool_calling_agent , AgentExecutor
 
 from app.config import settings
 from app.ai.tools.market_data import get_stock_data, get_historical_prices, compare_companies
@@ -105,9 +105,9 @@ def create_research_agent()-> AgentExecutor:
     """
 
     # INitialize claude LLM via Langchain
-    llm = ChatAnthropic(
+    llm = ChatGroq(
         model = settings.LLM_MODEL,
-        api_key= settings.ANTHROPIC_API_KEY,
+        api_key= settings.GROQ_API_KEY,
         temperature = settings.LLM_TEMPERATURE,
         max_tokens= 4096,
 
@@ -122,7 +122,7 @@ def create_research_agent()-> AgentExecutor:
 
     # create agent - uses Claude's native tool calling (not React text parsing)
 
-    agent= craete_tool_calling_agent(
+    agent= create_tool_calling_agent(
         llm= llm , 
         tools= TOOLS,
         prompt= prompt,
@@ -161,7 +161,7 @@ async def run_research_query(query: str)->dict:
         result = await executor.ainvoke({"input": query})
 
         # Extract the output
-
+        
         output = result.get("output", "")
 
         #Parse the structured JSON from the agent's response
@@ -169,15 +169,15 @@ async def run_research_query(query: str)->dict:
         parsed = _parse_agent_output(output)
 
         #Extract tool call metadata from intermediate steps 
-        tools_cals = []
-        for step in result.get("intermediate_Steps", []):
+        tool_calls = []
+        for step in result.get("intermediate_steps", []):
             action , observation = step
             tool_calls.append({
-                "tool": action.tool, 
+                "tool": action.tool,
                 "input": str(action.tool_input),
             })
 
-        parsed["tool_calls"] = tools_cals
+        parsed["tool_calls"] = tool_calls
         return parsed
 
     except Exception as e:

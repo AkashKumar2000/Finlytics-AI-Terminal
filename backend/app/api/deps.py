@@ -44,7 +44,7 @@ async def get_current_user(credentials : HTTPAuthorizationCredentials= Depends(s
         
     return user 
 
-async def require_admin(current_user : User = Depends(get_current_user))->user:
+async def require_admin(current_user : User = Depends(get_current_user))->User:
     """Dependeny that ensure that current user has Admin role"""
 
     if current_user.role!= UserRole.ADMIN:

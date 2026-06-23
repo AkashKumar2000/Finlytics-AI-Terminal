@@ -9,16 +9,11 @@ from app.schemas.user import SignupRequest , LoginRequest , AuthResponse, UserRe
 from app.utils.security import hash_password , verify_password , create_access_token
 from app.api.deps import get_current_user
 
-router = APIRouter(prefix="/auth" , tags=["Authentication"])
-
-
-#-----------------------------
-
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 def _slugify(name: str)->str:   
     """Convert org name to URL-safe slug."""
-    slug= re.sub(r"[^\w\s-]", "" , name.lower().strip)    # re.sub(pattern, replacement, text)
+    slug= re.sub(r"[^\w\s-]", "" , name.lower().strip())    # re.sub(pattern, replacement, text)
     return re.sub(r"[\s_]", "-", slug)
 
 @router.post("/signup", response_model = AuthResponse, status_code= status.HTTP_201_CREATED)
@@ -85,7 +80,7 @@ async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)):
         user = User(
             email= payload.email,
             full_name = payload.full_name,
-            hash_password= hash_password(payload.password),
+            hashed_password= hash_password(payload.password),
             role= role , 
             org_id = org.id,
         )
@@ -120,7 +115,7 @@ async def login(payload: LoginRequest , db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email== payload.email))
     user = result.scalar_one_or_none()
 
-    if not user or not verify_password(payload.password, user.hash_password):
+    if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -178,7 +173,7 @@ async def get_me(
             full_name = current_user.full_name, 
             role= current_user.role,
             org_id= current_user.org_id,
-            org_name = org.id,
+            org_name = org.name,
             is_active= current_user.is_active, 
             created_at= current_user.created_at, 
 

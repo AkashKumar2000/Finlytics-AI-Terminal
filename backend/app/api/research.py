@@ -4,6 +4,7 @@ from sqlalchemy import select , desc
 
 from app.database import get_db
 from app.models import User , ResearchReport , AuditLog
+from app.ai.agent import run_research_query
 from app.schemas.research import (
     ResearchQueryRequest,
     ResearchReportResponse,
@@ -53,7 +54,6 @@ async def get_report(
         )
     )
     report = result.scalar_one_or_none()
-    report = result.scalar_one_or_none()
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     return report
@@ -72,15 +72,16 @@ async def create_research(
     (implemented in Day 2).
     """
 
-    # For now, create a placeholder report. Day 2 will wire in the AI agent.
+    # Run AI agent
+    ai_result = await run_research_query(payload.query)
 
     report = ResearchReport(
-        title= payload.query[:100],
+        title= ai_result.get("title", payload.query[:100]),
         query= payload.query,
-        result_data = {"message": "AI processing will be connected in the AI layer"},
-        sources= [], 
-        tags =[],
-        status = "pending", 
+        result_data = ai_result,
+        sources= ai_result.get("sources", []),
+        tags = ai_result.get("companies_analyzed", []),
+        status = "completed",
         org_id=current_user.org_id,
         created_by=current_user.id,
     )

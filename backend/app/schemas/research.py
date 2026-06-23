@@ -14,7 +14,7 @@ class ResearchReportResponse(BaseModel):
     id: str
     title: str
     query: str
-    result_date: dict | None= None
+    result_data: dict | None= None
     sources: list | None= None
     tags: list | None= None
     status: str

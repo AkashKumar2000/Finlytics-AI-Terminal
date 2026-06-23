@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
-from app.models import Organization , user
+from app.models import Organization , User
 from app.schemas.organization import OrgResponse , OrgUpdateRequest, OrgMemberResponse
 from app.api.deps import get_current_user, require_admin
 
@@ -24,7 +24,7 @@ async def get_my_org(
         raise HTTPException(status_code=404, detail="Organization not found")
     return org
 
-@router.get("/", response_model = OrgResponse)
+@router.put("/", response_model = OrgResponse)
 async def update_org(
     payload: OrgUpdateRequest,
     admin: User = Depends(require_admin),
@@ -58,7 +58,7 @@ async def list_members(
         select(User).where(User.org_id == current_user.org_id)
     )
 
-    return result.scalar().all()
+    return result.scalars().all()
 
 
 @router.get("/invite-code")
