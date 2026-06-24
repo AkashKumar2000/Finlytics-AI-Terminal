@@ -293,7 +293,7 @@ Data is isolated between organizations:
 
 ## Known Limitations
 
-- **Sentiment analysis is keyword-based**, not ML-based. A production system would use FinBERT for more accurate financial sentiment classification.
+
 - **No caching layer.** Repeated queries for the same company hit Kite Connect and Tavily every time. Redis with 15-30 min TTL would fix this.
 - **AgentExecutor is a black box.** LangGraph would give explicit control over the agent's decision flow with visible nodes and conditional edges.
 - **No automated tests.** Prioritized a working product over test coverage. The seed script serves as a basic integration verification.
