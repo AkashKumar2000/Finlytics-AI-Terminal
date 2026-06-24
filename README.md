@@ -62,12 +62,12 @@ No hardcoded pipeline. The agent decides which tools to call based on the query.
 
 | Screen | Description |
 |--------|-------------|
-| ![Login](screenshots\login_page.png) | Login page with email/password |
-| ![Agent_working](screenshots\Agent Working.png) | AGents Working and quick actions |
-| ![Research_Query](screenshots\Research Query.png) | Research query input with streaming progress |
-| ![Results](screenshots\Results.png) | Structured AI results — cards, tables, charts, sentiment |
-| ![Watchlist](screenshots\watchlist.png) | Company watchlist with NSE tickers |
-| ![Multi-tenant](screenshots\Multitenant-Ogranization A.png) | Two orgs showing different data (isolation proof) - Ogranization A |
+| ![Login](screenshots/login_page.png) | Login page with email/password |
+| ![Agent_working](screenshots/Agent Working.png) | AGents Working and quick actions |
+| ![Research_Query](screenshots/Research Query.png) | Research query input with streaming progress |
+| ![Results](screenshots/Results.png) | Structured AI results — cards, tables, charts, sentiment |
+| ![Watchlist](screenshots/Research%20Query.pngwatchlist.png) | Company watchlist with NSE tickers |
+| ![Multi-tenant](screenshots/Multitenant-Ogranization A.png) | Two orgs showing different data (isolation proof) - Ogranization A |
 
 ---
 
