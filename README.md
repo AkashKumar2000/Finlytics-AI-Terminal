@@ -58,16 +58,25 @@ No hardcoded pipeline. The agent decides which tools to call based on the query.
 
 ## Screenshots
 
-> _Add screenshots of your running app here_
+## Screenshots
 
-| Screen | Description |
-|--------|-------------|
-| ![Login](screenshots/login_page.png) | Login page with email/password |
-| ![Agent_working](screenshots/Agent_Working.png) | AGents Working and quick actions |
-| ![Research_Query](screenshots/Research_Query.png) | Research query input with streaming progress |
-| ![Results](screenshots/Results.png) | Structured AI results — cards, tables, charts, sentiment |
-| ![Watchlist](screenshots/watchlist.png) | Company watchlist with NSE tickers |
-| ![Multi-tenant](screenshots/Multitenant_Ogranization A.png) | Two orgs showing different data (isolation proof) - Ogranization A |
+### Login
+![Login](screenshots/login_page.png)
+
+### Agent Working
+![Agent Working](screenshots/Agent_Working.png)
+
+### Research Query
+![Research Query](screenshots/Research_Query.png)
+
+### Results
+![Results](screenshots/Results.png)
+
+### Watchlist
+![Watchlist](screenshots/watchlist.png)
+
+### Multi Tenant
+![Multi Tenant](screenshots/Multitenant_Ogranization_A.png)
 
 ---
 
