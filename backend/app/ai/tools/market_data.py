@@ -1,39 +1,38 @@
-"""
-Market Data Tool — fetches stock prices and financials via Zerodha Kite Connect.
-"""
-import json 
-import time 
+"""Market Data Tool — fetches stock prices and financials via Zerodha Kite Connect."""
+import json
+import time
 import logging
-from datetime import datetime , timedelta
+from datetime import datetime, timedelta
 from langchain_core.tools import tool
 from app.config import settings
 
-logger = logging.getLogger("market-data")  # Logger named market_data
+logger = logging.getLogger("market_data")
 
-_cache: dict[str , tuple[float, str]] ={}
-_CACHE_TTL: 300 # Seconds
+_cache: dict[str, tuple[float, str]] = {}
+_CACHE_TTL = 300  # seconds
 
-def _cache_get(key : str)-> str | None :
+
+def _cache_get(key: str) -> str | None:
     entry = _cache.get(key)
-    if entry and time.time()-entry[0] > _CACHE_TTL:
+    if entry and time.time() - entry[0] < _CACHE_TTL:
         return entry[1]
     return None
 
-def _cache_set(key: str, value: str)-> None:
+
+def _cache_set(key: str, value: str) -> None:
     _cache[key] = (time.time(), value)
 
 
 def _kite():
-
-    if not setting.KITE_API_KEY or not settings.KITE_ACCESS_TOKEN:
+    if not settings.KITE_API_KEY or not settings.KITE_ACCESS_TOKEN:
         raise ValueError("KITE_API_KEY or KITE_ACCESS_TOKEN not set. Run scripts/kite_auth.py first.")
-
     from kiteconnect import KiteConnect
     kite = KiteConnect(api_key=settings.KITE_API_KEY)
     kite.set_access_token(settings.KITE_ACCESS_TOKEN)
     return kite
 
-def _kite_symbol(symbol:str)->str:
+
+def _kite_symbol(symbol: str) -> str:
     """Convert RELIANCE.NS → NSE:RELIANCE for Kite API."""
     sym = symbol.upper()
     if sym.endswith(".NS"):
@@ -44,7 +43,7 @@ def _kite_symbol(symbol:str)->str:
 
 
 @tool
-def get_sock_data(symbol:str)->str:
+def get_stock_data(symbol: str) -> str:
     """Fetch current stock price, key financial metrics, and company info for a given ticker symbol.
 
     Use this tool when the user asks about:
@@ -59,19 +58,18 @@ def get_sock_data(symbol:str)->str:
     Returns:
         JSON string with company info and financial metrics in INR.
     """
-
     cache_key = f"stock:{symbol.upper()}"
     cached = _cache_get(cache_key)
     if cached:
         logger.debug("Cache hit: %s", cache_key)
         return cached
-    
+
     try:
         kite = _kite()
         kite_sym = _kite_symbol(symbol)
         quote = kite.quote([kite_sym])[kite_sym]
         ohlc = quote.get("ohlc", {})
-        
+
         data = {
             "symbol": symbol.upper(),
             "company_name": kite_sym.split(":")[1],
@@ -95,13 +93,14 @@ def get_sock_data(symbol:str)->str:
         result = json.dumps(data, default=str)
         _cache_set(cache_key, result)
         return result
-    
+
     except Exception as e:
         return json.dumps({
             "error": f"Failed to fetch data for {symbol}: {str(e)}",
             "symbol": symbol.upper(),
             "source": "Zerodha Kite Connect",
         })
+
 
 @tool
 def get_historical_prices(symbol: str, period: str = "3mo") -> str:
@@ -178,3 +177,63 @@ def get_historical_prices(symbol: str, period: str = "3mo") -> str:
         })
 
 
+@tool
+def compare_companies(symbols: str) -> str:
+    """Fetch and compare key financial metrics for multiple companies side by side.
+
+    Use this tool when the user asks to:
+    - Compare multiple companies or stocks
+    - Evaluate which company has better financials
+    - Side-by-side analysis (e.g., "Compare Reliance, TCS, and Infosys")
+
+    Args:
+        symbols: Comma-separated NSE/BSE ticker symbols (e.g., "RELIANCE.NS,TCS.NS,INFY.NS")
+
+    Returns:
+        JSON with comparison table data.
+    """
+    normalized = ",".join(sorted(s.strip().upper() for s in symbols.split(",")))
+    cache_key = f"compare:{normalized}"
+    cached = _cache_get(cache_key)
+    if cached:
+        logger.debug("Cache hit: %s", cache_key)
+        return cached
+
+    try:
+        kite = _kite()
+        symbol_list = [s.strip().upper() for s in symbols.split(",")]
+        kite_syms = [_kite_symbol(s) for s in symbol_list]
+
+        quotes = kite.quote(kite_syms)
+        comparison = []
+
+        for sym, kite_sym in zip(symbol_list, kite_syms):
+            q = quotes.get(kite_sym, {})
+            ohlc = q.get("ohlc", {})
+            comparison.append({
+                "symbol": sym,
+                "company_name": kite_sym.split(":")[1],
+                "exchange": kite_sym.split(":")[0],
+                "current_price": q.get("last_price"),
+                "previous_close": ohlc.get("close"),
+                "day_high": ohlc.get("high"),
+                "day_low": ohlc.get("low"),
+                "volume": q.get("volume"),
+                "change": q.get("net_change"),
+            })
+
+        result = json.dumps({
+            "comparison": comparison,
+            "symbols": symbol_list,
+            "source": "Zerodha Kite Connect",
+            "fetched_at": datetime.now().isoformat(),
+        }, default=str)
+        _cache_set(cache_key, result)
+        return result
+
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to compare companies: {str(e)}",
+            "symbols": symbols,
+            "source": "Zerodha Kite Connect",
+        })

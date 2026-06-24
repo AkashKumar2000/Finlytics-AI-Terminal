@@ -111,7 +111,13 @@ function Section({ section }) {
         )
 
       default:
-        return content ? <p className="text-sm text-gray-700 leading-relaxed">{content}</p> : null
+        return content ? (
+          <div className="text-sm text-gray-700 leading-relaxed space-y-2">
+            {content.split('\n').filter(Boolean).map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
+          </div>
+        ) : null
     }
   }
 

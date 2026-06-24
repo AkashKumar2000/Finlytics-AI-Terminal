@@ -23,7 +23,7 @@ chromadb==0.5.15
 sentence-transformers==3.2.1
 
 # Data Tools
-yfinance==0.2.44
+kiteconnect==5.0.1
 newsapi-python==0.2.7
 
 # Utilities

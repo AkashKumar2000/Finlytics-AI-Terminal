@@ -36,6 +36,11 @@ class ResearchReportListResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ResearchReportListPaginatedResponse(BaseModel):
+    reports: list[ResearchReportListResponse]
+    total: int
+
+
 class ResearchUpdateRequest(BaseModel):
     title: str | None = Field(default=None, max_length=500)
     tags: list[str] | None = None

@@ -1,5 +1,4 @@
-""""
-Document knowledge Base Tool- Vector search over SEC fillings and earning reports.
+"""Document Knowledge Base Tool — vector search over SEC filings and earnings reports.
 
 This is Tool #3 of 3. Uses ChromaDB with HuggingFace embeddings.
 The agent calls this when user asks about:
@@ -9,33 +8,30 @@ The agent calls this when user asks about:
 
 LangChain pipeline:
   DocumentLoader → RecursiveCharacterTextSplitter → HuggingFaceEmbeddings → ChromaDB
-
-
 """
-
-import json 
-import os 
+import json
+import os
 from langchain_core.tools import tool
 
+# Module-level store reference (initialized on first use)
 _vector_store = None
 
+
 def get_vector_store():
-    """
-    Lazy-load the ChromaDB vector store. Creates it if it doesn't exist.
-    """
-
-    global _vector_store 
-
+    """Lazy-load the ChromaDB vector store. Creates it if it doesn't exist."""
+    global _vector_store
     if _vector_store is not None:
         return _vector_store
 
     from langchain_chroma import Chroma
-    from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+    from langchain_community.embeddings import HuggingFaceEmbeddings
     from app.config import settings
 
-    embeddings = HuggingFaceBgeEmbeddings(
+    # HuggingFace embeddings — free, no API key needed, runs locally
+    # all-MiniLM-L6-v2 is small (80MB) and good enough for RAG
+    embeddings = HuggingFaceEmbeddings(
         model_name="all-MiniLM-L6-v2",
-        model_kwargs = {'device': 'cpu'},
+        model_kwargs={"device": "cpu"},
     )
 
     _vector_store = Chroma(
@@ -46,47 +42,47 @@ def get_vector_store():
 
     return _vector_store
 
+
 @tool
-def search_financial_documents(query: str)-> str:
+def search_financial_documents(query: str) -> str:
     """Search the internal document knowledge base for SEC filings, earnings reports, and analyst notes.
 
     Use this tool when the user asks about:
-    - SEC filings 
+    - SEC filings (10-K, 10-Q, 8-K)
     - Earnings call transcripts or details
     - Company fundamentals not available via the stock data API
     - Specific financial metrics from reports (revenue breakdown, segment data)
     - Any question requiring document-level context
 
     Args:
-        query: Natural language search query (e.g., "TCS data center revenue breakdown Q1 2026")
+        query: Natural language search query (e.g., "NVIDIA data center revenue breakdown Q3 2024")
 
     Returns:
         JSON with relevant document chunks, their sources, and relevance scores.
     """
-
     try:
         store = get_vector_store()
 
-        #Check if store has any documents
+        # Check if store has any documents
         collection = store._collection
-        if collection.count() ==0:
+        if collection.count() == 0:
             return json.dumps({
                 "query": query,
-                "results":[],
-                "message": "Knowledge base is empty . Run the ingestion script to populate it",
-                "source": "CHROMA DB(local)",
+                "results": [],
+                "message": "Knowledge base is empty. Run the ingestion script to populate it.",
+                "source": "ChromaDB (local)",
             })
 
-        # USING MMR (maxicmal marginal relevance)- Give Diverge result for each chunk 
-        
+        # Use MMR (Maximal Marginal Relevance) for diverse results
+        # You know this from your Honeywell prep — MMR balances relevance + diversity
         docs = store.max_marginal_relevance_search(
-            query= query, 
-            k=5,      # return top 5 chunks
-            fetch_k=20, # considering top 20 before MMR filtering
-            lambda_mult = 0.7   # 0.7 = more relevance, 0.3 = more diversity
+            query=query,
+            k=5,           # return top 5 chunks
+            fetch_k=20,    # consider top 20 before MMR filtering
+            lambda_mult=0.7,  # 0.7 = more relevance, 0.3 = more diversity
         )
 
-        results= []
+        results = []
         for doc in docs:
             results.append({
                 "content": doc.page_content,
@@ -98,13 +94,13 @@ def search_financial_documents(query: str)-> str:
                     "section": doc.metadata.get("section", "Unknown"),
                 },
             })
-        
+
         return json.dumps({
             "query": query,
             "results_count": len(results),
-            "results" : results.append,
-            "source" : "CHROMA DB(local knowledge base)"
-            })
+            "results": results,
+            "source": "ChromaDB (local knowledge base)",
+        })
 
     except Exception as e:
         return json.dumps({
@@ -112,4 +108,3 @@ def search_financial_documents(query: str)-> str:
             "query": query,
             "source": "ChromaDB",
         })
-
